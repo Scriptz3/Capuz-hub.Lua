@@ -73,20 +73,20 @@ local function IsPlayerInCart(player)
     return false
 end
 
--- Função para enviar o jogador e o carrinho para o "void" (abaixo do mapa)
+-- Função para enviar o jogador e o carrinho para o "void"
 local function SendToVoid(player, vehicle)
     -- Teleportando o jogador
     local char = player.Character
     if char then
         local humanoidRootPart = char:FindFirstChild("HumanoidRootPart")
         if humanoidRootPart then
-            humanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta para o "void" abaixo do mapa
+            humanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta para o "void"
         end
     end
 
     -- Teleportando o carrinho
     if vehicle and vehicle:FindFirstChild("HumanoidRootPart") then
-        vehicle.HumanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta o carrinho para o "void" abaixo do mapa
+        vehicle.HumanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta o carrinho para o "void"
     end
 end
 
@@ -138,9 +138,24 @@ for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
 
                 -- Depois que o jogador senta no carrinho, teletransporta o jogador e o carrinho para o void
                 SendToVoid(game.Players.LocalPlayer, vehicle)
-
-                -- Interrompe o "seguir" o jogador após a teleportação
                 print("Jogador " .. targetPlayer.Name .. " e seu carrinho foram teleportados para o void.")
+            end
+        })
+    end
+end
+
+-- Adicionando a lista de jogadores na aba "Teleport"
+for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
+    if targetPlayer ~= game.Players.LocalPlayer then  -- Não adicionar o próprio jogador à lista
+        Tabs.Teleport:AddButton({
+            Title = "Teleportar para " .. targetPlayer.Name,
+            Callback = function()
+                TeleportToPlayer(targetPlayer)
+                Fluent:Notify({
+                    Title = "Teleporte",
+                    Content = "Teleportado para " .. targetPlayer.Name,
+                    Duration = 5
+                })
             end
         })
     end
