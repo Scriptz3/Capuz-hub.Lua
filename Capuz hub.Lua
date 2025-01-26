@@ -15,7 +15,7 @@ local Window = Fluent:CreateWindow({
 
 -- Abas
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main" }),
+    Main = Window:AddTab({ Title = "Menu" }),
     Speed = Window:AddTab({ Title = "Velocidade" })
 }
 
