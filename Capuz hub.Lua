@@ -16,7 +16,8 @@ local Window = Fluent:CreateWindow({
 -- Abas
 local Tabs = {
     Main = Window:AddTab({ Title = "Main" }),
-    Speed = Window:AddTab({ Title = "Velocidade" })
+    Speed = Window:AddTab({ Title = "Velocidade" }),
+    Teleport = Window:AddTab({ Title = "Teleporte" })
 }
 
 -- Notificação inicial
@@ -44,6 +45,27 @@ for _, speed in ipairs(SpeedOptions) do
     })
 end
 
+-- Função para teleportar para um jogador
+local function TeleportToPlayer(player)
+    local character = game.Players.LocalPlayer.Character
+    if character and player.Character then
+        character:MoveTo(player.Character.HumanoidRootPart.Position)
+        print("Teleported to " .. player.Name)
+    else
+        print("Erro ao teleportar para " .. player.Name)
+    end
+end
+
+-- Listando todos os jogadores na aba "Teleporte"
+for _, player in ipairs(game.Players:GetPlayers()) do
+    Tabs.Teleport:AddButton({
+        Title = "Teleportar para " .. player.Name,
+        Callback = function()
+            TeleportToPlayer(player)
+        end
+    })
+end
+
 -- Configuração dos gerenciadores
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
@@ -54,6 +76,7 @@ SaveManager:SetFolder("CapuzHub/specific-game")
 
 InterfaceManager:BuildInterfaceSection(Tabs.Main)
 InterfaceManager:BuildInterfaceSection(Tabs.Speed)
+InterfaceManager:BuildInterfaceSection(Tabs.Teleport) -- Adiciona a sessão Teleporte
 SaveManager:BuildConfigSection(Tabs.Main)
 
 -- Seleciona a aba principal
