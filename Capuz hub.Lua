@@ -16,7 +16,8 @@ local Window = Fluent:CreateWindow({
 -- Abas
 local Tabs = {
     Main = Window:AddTab({ Title = "Menu" }),
-    Speed = Window:AddTab({ Title = "Velocidade" })
+    Speed = Window:AddTab({ Title = "Velocidade" }),
+    Troll = Window:AddTab({ Title = "Troll" }) -- Nova aba "Troll"
 }
 
 -- Notificação inicial
@@ -32,7 +33,7 @@ local function SetTpwalkSpeed(value)
     print("Velocidade ajustada para Tpwalk " .. value)
 end
 
--- Adicionando as opções de velocidade (Tpwalk 2, Tpwalk 3, etc.) na aba "Velocidade"
+-- Adicionando as opções de velocidade na aba "Velocidade"
 local SpeedOptions = {2, 3, 4, 5, 10, 50, 100, 200, 500}
 
 for _, speed in ipairs(SpeedOptions) do
@@ -44,11 +45,57 @@ for _, speed in ipairs(SpeedOptions) do
     })
 end
 
+-- Função para teleportar para outro jogador
+local function TeleportToPlayer(playerName)
+    local targetPlayer = game.Players:FindFirstChild(playerName)
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
+        local localPlayer = game.Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            localPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+            print("Teleportado para " .. playerName)
+        end
+    else
+        Fluent:Notify({
+            Title = "Erro",
+            Content = "Jogador não encontrado ou sem posição válida.",
+            Duration = 3
+        })
+    end
+end
+
+-- Lista de jogadores na aba "Troll"
+local PlayerListSection = Tabs.Troll:AddSection({ Title = "Lista de Jogadores" })
+
+local function RefreshPlayerList()
+    PlayerListSection:Clear() -- Limpa a lista existente
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            PlayerListSection:AddButton({
+                Title = player.Name,
+                Callback = function()
+                    TeleportToPlayer(player.Name)
+                end
+            })
+        end
+    end
+end
+
+-- Botão para atualizar a lista de jogadores
+Tabs.Troll:AddButton({
+    Title = "Atualizar Lista",
+    Callback = function()
+        RefreshPlayerList()
+    end
+})
+
+-- Atualiza a lista automaticamente ao abrir
+RefreshPlayerList()
+
 -- Configuração dos gerenciadores
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 
--- Construção da interface
 InterfaceManager:SetFolder("CapuzHub")
 SaveManager:SetFolder("CapuzHub/specific-game")
 
