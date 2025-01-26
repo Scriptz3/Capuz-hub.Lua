@@ -17,7 +17,8 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Main" }),
     Speed = Window:AddTab({ Title = "Velocidade" }),
-    Teleport = Window:AddTab({ Title = "Teleporte" })
+    Teleport = Window:AddTab({ Title = "Teleporte" }),
+    Kill = Window:AddTab({ Title = "Kill" }) -- Adicionando a aba "Kill"
 }
 
 -- Notificação inicial
@@ -56,14 +57,93 @@ local function TeleportToPlayer(player)
     end
 end
 
--- Listando todos os jogadores na aba "Teleporte"
-for _, player in ipairs(game.Players:GetPlayers()) do
-    Tabs.Teleport:AddButton({
-        Title = "Teleportar para " .. player.Name,
-        Callback = function()
-            TeleportToPlayer(player)
+-- Função para verificar se o jogador está sentado no carrinho
+local function IsPlayerInCart(player)
+    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        for _, vehicle in pairs(workspace:GetChildren()) do
+            if vehicle:IsA("Model") and vehicle:FindFirstChild("Seat") then
+                local seat = vehicle.Seat
+                if seat.Occupant == humanoid then
+                    return true, vehicle
+                end
+            end
         end
-    })
+    end
+    return false
+end
+
+-- Função para enviar o jogador e o carrinho para o "void" (abaixo do mapa)
+local function SendToVoid(player, vehicle)
+    -- Teleportando o jogador
+    local char = player.Character
+    if char then
+        local humanoidRootPart = char:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            humanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta para o "void" abaixo do mapa
+        end
+    end
+
+    -- Teleportando o carrinho
+    if vehicle and vehicle:FindFirstChild("HumanoidRootPart") then
+        vehicle.HumanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta o carrinho para o "void" abaixo do mapa
+    end
+end
+
+-- Função para manter o jogador "preso" ao alvo
+local function StickToPlayer(targetPlayer)
+    local character = game.Players.LocalPlayer.Character
+    local targetCharacter = targetPlayer.Character
+
+    if character and targetCharacter then
+        -- Fica "preso" ao alvo
+        local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+        local playerHRP = character:FindFirstChild("HumanoidRootPart")
+
+        if targetHRP and playerHRP then
+            -- Atualiza a posição do jogador com o alvo
+            while targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") do
+                playerHRP.CFrame = targetHRP.CFrame
+                wait(0.1)  -- Ajuste do tempo, para não causar delay
+            end
+        end
+    end
+end
+
+-- Listando todos os jogadores na aba "Kill"
+for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
+    if targetPlayer ~= game.Players.LocalPlayer then  -- Não adicionar o próprio jogador à lista
+        Tabs.Kill:AddButton({
+            Title = "Kill " .. targetPlayer.Name,  -- Alterado de "Teleportar para" para "Kill"
+            Callback = function()
+                -- Teleporta o jogador
+                TeleportToPlayer(targetPlayer)
+
+                -- Mensagem de animação
+                Fluent:Notify({
+                    Title = "Atenção",
+                    Content = "Fique com a animação em deitar-se com o carrinho.",
+                    Duration = 5
+                })
+
+                -- Ficar preso ao jogador alvo
+                StickToPlayer(targetPlayer)
+
+                -- Aguardar até o jogador alvo sentar no carrinho
+                local isInCart, vehicle = IsPlayerInCart(targetPlayer)
+                while not isInCart do
+                    wait(1)
+                    isInCart, vehicle = IsPlayerInCart(targetPlayer)
+                end
+
+                -- Depois que o jogador senta no carrinho, teletransporta o jogador e o carrinho para o void
+                SendToVoid(game.Players.LocalPlayer, vehicle)
+
+                -- Interrompe o "seguir" o jogador após a teleportação
+                print("Jogador " .. targetPlayer.Name .. " e seu carrinho foram teleportados para o void.")
+            end
+        })
+    end
 end
 
 -- Configuração dos gerenciadores
@@ -77,6 +157,7 @@ SaveManager:SetFolder("CapuzHub/specific-game")
 InterfaceManager:BuildInterfaceSection(Tabs.Main)
 InterfaceManager:BuildInterfaceSection(Tabs.Speed)
 InterfaceManager:BuildInterfaceSection(Tabs.Teleport) -- Adiciona a sessão Teleporte
+InterfaceManager:BuildInterfaceSection(Tabs.Kill) -- Adiciona a sessão Kill
 SaveManager:BuildConfigSection(Tabs.Main)
 
 -- Seleciona a aba principal
