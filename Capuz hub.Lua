@@ -46,18 +46,23 @@ local function RefreshPlayerList()
     PlayerListSection:Clear() -- Limpa a lista existente
     for _, player in ipairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
-            -- Cria botão para cada jogador
+            -- Cria botão para cada jogador com a opção "TP"
             PlayerListSection:AddButton({
                 Title = player.Name,
                 Callback = function()
-                    -- Quando o jogador for clicado, oferece a opção de teleportar
-                    Fluent:Prompt({
+                    -- Ao clicar no nome do jogador, oferece a opção de teleportar
+                    Fluent:Notify({
                         Title = "Teleportar para " .. player.Name,
                         Content = "Deseja se teleportar para " .. player.Name .. "?",
-                        Buttons = {
-                            { Text = "Sim", Callback = function() TeleportToPlayer(player.Name) end },
-                            { Text = "Não" }
-                        }
+                        Duration = 3
+                    })
+                    
+                    -- Adiciona o botão de Teleportar (TP) dentro da lista
+                    PlayerListSection:AddButton({
+                        Title = "TP para " .. player.Name,
+                        Callback = function()
+                            TeleportToPlayer(player.Name)
+                        end
                     })
                 end
             })
