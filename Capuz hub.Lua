@@ -13,12 +13,12 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- Abas
+-- Abas com emojis
 local Tabs = {
     Main = Window:AddTab({ Title = "Main" }),
-    Speed = Window:AddTab({ Title = "Velocidade" }),
-    Teleport = Window:AddTab({ Title = "Teleporte" }),
-    Kill = Window:AddTab({ Title = "Kill" }) -- Adicionando a aba "Kill"
+    Speed = Window:AddTab({ Title = "⚡ Velocidade" }),  -- Emoji de raio ao lado de "Velocidade"
+    Teleport = Window:AddTab({ Title = "⭐ Teleporte" }),  -- Emoji de estrela ao lado de "Teleporte"
+    Kill = Window:AddTab({ Title = "💀 Kill" })  -- Emoji de caveira ao lado de "Kill"
 }
 
 -- Notificação inicial
@@ -186,3 +186,29 @@ Fluent:Notify({
 
 -- Salvando configurações
 SaveManager:LoadAutoloadConfig()
+
+-- Criando o botão flutuante
+local FloatingButton = Instance.new("TextButton")
+FloatingButton.Size = UDim2.fromOffset(100, 50)
+FloatingButton.Position = UDim2.new(0.5, -50, 0.1, 0)  -- Centralizado na parte superior
+FloatingButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Cor de fundo do botão
+FloatingButton.Text = "Cpz Hb"  -- Texto do botão
+FloatingButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Cor do texto
+FloatingButton.Font = Enum.Font.SourceSans
+FloatingButton.TextSize = 24
+FloatingButton.Parent = game.CoreGui
+
+-- Função para alternar a visibilidade do Hub
+local isHubVisible = true  -- Flag para controlar a visibilidade do Hub
+
+local function ToggleHubVisibility()
+    if isHubVisible then
+        Window:Hide()  -- Esconde o Hub
+    else
+        Window:Show()  -- Mostra o Hub
+    end
+    isHubVisible = not isHubVisible  -- Alterna o estado da visibilidade
+end
+
+-- Conectando o clique no botão flutuante
+FloatingButton.MouseButton1Click:Connect(ToggleHubVisibility)
