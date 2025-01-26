@@ -1,5 +1,4 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
@@ -19,28 +18,6 @@ local Tabs = {
     Speed = Window:AddTab({ Title = "Velocidade" }),
     Troll = Window:AddTab({ Title = "Troll" })
 }
-
--- Função para alterar a velocidade de tpwalk
-local function SetTpwalkSpeed(value)
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-        print("Velocidade ajustada para Tpwalk " .. value)
-    else
-        print("Erro: personagem ou humanoide não encontrado.")
-    end
-end
-
--- Adicionando as opções de velocidade na aba "Velocidade"
-local SpeedOptions = {2, 3, 4, 5, 10, 50, 100, 200, 500}
-
-for _, speed in ipairs(SpeedOptions) do
-    Tabs.Speed:AddButton({
-        Title = "Tpwalk " .. speed,
-        Callback = function()
-            SetTpwalkSpeed(speed)
-        end
-    })
-end
 
 -- Função para teleportar para outro jogador
 local function TeleportToPlayer(playerName)
@@ -69,10 +46,19 @@ local function RefreshPlayerList()
     PlayerListSection:Clear() -- Limpa a lista existente
     for _, player in ipairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
+            -- Cria botão para cada jogador
             PlayerListSection:AddButton({
                 Title = player.Name,
                 Callback = function()
-                    TeleportToPlayer(player.Name)
+                    -- Quando o jogador for clicado, oferece a opção de teleportar
+                    Fluent:Prompt({
+                        Title = "Teleportar para " .. player.Name,
+                        Content = "Deseja se teleportar para " .. player.Name .. "?",
+                        Buttons = {
+                            { Text = "Sim", Callback = function() TeleportToPlayer(player.Name) end },
+                            { Text = "Não" }
+                        }
+                    })
                 end
             })
         end
