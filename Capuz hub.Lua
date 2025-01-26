@@ -17,20 +17,17 @@ local Window = Fluent:CreateWindow({
 local Tabs = {
     Main = Window:AddTab({ Title = "Menu" }),
     Speed = Window:AddTab({ Title = "Velocidade" }),
-    Troll = Window:AddTab({ Title = "Troll" }) -- Nova aba "Troll"
+    Troll = Window:AddTab({ Title = "Troll" })
 }
-
--- Notificação inicial
-Fluent:Notify({
-    Title = "Bem-vindo",
-    Content = "O Capuz Hub foi carregado.",
-    Duration = 5
-})
 
 -- Função para alterar a velocidade de tpwalk
 local function SetTpwalkSpeed(value)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-    print("Velocidade ajustada para Tpwalk " .. value)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+        print("Velocidade ajustada para Tpwalk " .. value)
+    else
+        print("Erro: personagem ou humanoide não encontrado.")
+    end
 end
 
 -- Adicionando as opções de velocidade na aba "Velocidade"
@@ -61,6 +58,7 @@ local function TeleportToPlayer(playerName)
             Content = "Jogador não encontrado ou sem posição válida.",
             Duration = 3
         })
+        print("Erro ao teleportar: jogador não encontrado ou inválido.")
     end
 end
 
@@ -86,6 +84,7 @@ Tabs.Troll:AddButton({
     Title = "Atualizar Lista",
     Callback = function()
         RefreshPlayerList()
+        print("Lista de jogadores atualizada.")
     end
 })
 
