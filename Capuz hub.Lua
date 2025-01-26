@@ -13,12 +13,13 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- Abas com emojis
+-- Abas
 local Tabs = {
-    Main = Window:AddTab({ Title = "Main" }),
-    Speed = Window:AddTab({ Title = "⚡ Velocidade" }),  -- Emoji de raio ao lado de "Velocidade"
-    Teleport = Window:AddTab({ Title = "⭐ Teleporte" }),  -- Emoji de estrela ao lado de "Teleporte"
-    Troll = Window:AddTab({ Title = "💀 Troll" })  -- Renomeado de "Kill" para "Troll" e emoji de caveira
+    Main = Window:AddTab({ Title = "Main 🏠" }),
+    Speed = Window:AddTab({ Title = "Velocidade ⚡" }),
+    Teleport = Window:AddTab({ Title = "Teleporte 🚶‍♂️" }),
+    Kill = Window:AddTab({ Title = "Kill ☠️" }),
+    Others = Window:AddTab({ Title = "Others 🔧" }) -- Adicionando a aba "Others"
 }
 
 -- Notificação inicial
@@ -73,20 +74,20 @@ local function IsPlayerInCart(player)
     return false
 end
 
--- Função para enviar o jogador e o carrinho para o "void"
+-- Função para enviar o jogador e o carrinho para o "void" (abaixo do mapa)
 local function SendToVoid(player, vehicle)
     -- Teleportando o jogador
     local char = player.Character
     if char then
         local humanoidRootPart = char:FindFirstChild("HumanoidRootPart")
         if humanoidRootPart then
-            humanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta para o "void"
+            humanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta para o "void" abaixo do mapa
         end
     end
 
     -- Teleportando o carrinho
     if vehicle and vehicle:FindFirstChild("HumanoidRootPart") then
-        vehicle.HumanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta o carrinho para o "void"
+        vehicle.HumanoidRootPart.CFrame = CFrame.new(0, -5000, 0)  -- Teleporta o carrinho para o "void" abaixo do mapa
     end
 end
 
@@ -110,101 +111,49 @@ local function StickToPlayer(targetPlayer)
     end
 end
 
--- Função para seguir um jogador
-local function FollowPlayer(targetPlayer)
-    local character = game.Players.LocalPlayer.Character
-    local targetCharacter = targetPlayer.Character
+-- Listando todos os jogadores na aba "Kill"
+for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
+    if targetPlayer ~= game.Players.LocalPlayer then  -- Não adicionar o próprio jogador à lista
+        Tabs.Kill:AddButton({
+            Title = "Kill " .. targetPlayer.Name,  -- Alterado de "Teleportar para" para "Kill"
+            Callback = function()
+                -- Teleporta o jogador
+                TeleportToPlayer(targetPlayer)
 
-    if character and targetCharacter then
-        -- Atualiza a posição para seguir o jogador alvo
-        while targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") do
-            local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-            if targetHRP then
-                character:MoveTo(targetHRP.Position)
-            end
-            wait(0.5)  -- Ajuste do tempo para não sobrecarregar a movimentação
-        end
-    end
-end
+                -- Mensagem de animação
+                Fluent:Notify({
+                    Title = "Atenção",
+                    Content = "Fique com a animação em deitar-se com o carrinho.",
+                    Duration = 5
+                })
 
--- Função para ver um jogador
-local function ViewPlayer(targetPlayer)
-    local character = game.Players.LocalPlayer.Character
-    local targetCharacter = targetPlayer.Character
+                -- Ficar preso ao jogador alvo
+                StickToPlayer(targetPlayer)
 
-    if character and targetCharacter then
-        -- Alinha o personagem para ver o jogador alvo
-        local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-        if targetHRP then
-            character:SetPrimaryPartCFrame(targetHRP.CFrame)
-        end
-    end
-end
-
--- Função para atualizar a lista de jogadores
-local function UpdatePlayerList()
-    for _, targetPlayer in ipairs(game.Players:GetPlayers()) do
-        if targetPlayer ~= game.Players.LocalPlayer then
-            Tabs.Troll:AddButton({
-                Title = targetPlayer.Name,
-                Callback = function()
-                    -- Exibe as opções para o jogador selecionado
-                    local subMenu = Tabs.Troll:AddSection({
-                        Title = "Kill Player",
-                        List = true
-                    })
-
-                    subMenu:AddButton({
-                        Title = "Follow",
-                        Callback = function()
-                            FollowPlayer(targetPlayer)
-                        end
-                    })
-
-                    subMenu:AddButton({
-                        Title = "Goto",
-                        Callback = function()
-                            TeleportToPlayer(targetPlayer)
-                        end
-                    })
-
-                    subMenu:AddButton({
-                        Title = "View",
-                        Callback = function()
-                            ViewPlayer(targetPlayer)
-                        end
-                    })
-
-                    subMenu:AddButton({
-                        Title = "Reset List",
-                        Callback = function()
-                            UpdatePlayerList()
-                        end
-                    })
+                -- Aguardar até o jogador alvo sentar no carrinho
+                local isInCart, vehicle = IsPlayerInCart(targetPlayer)
+                while not isInCart do
+                    wait(1)
+                    isInCart, vehicle = IsPlayerInCart(targetPlayer)
                 end
-            })
-        end
+
+                -- Depois que o jogador senta no carrinho, teletransporta o jogador e o carrinho para o void
+                SendToVoid(game.Players.LocalPlayer, vehicle)
+
+                -- Interrompe o "seguir" o jogador após a teleportação
+                print("Jogador " .. targetPlayer.Name .. " e seu carrinho foram teleportados para o void.")
+            end
+        })
     end
 end
 
--- Inicializando a lista de jogadores
-UpdatePlayerList()
-
--- Função para abrir e minimizar a lista de jogadores
-local isPlayerListVisible = false
-local function TogglePlayerList()
-    isPlayerListVisible = not isPlayerListVisible
-    if isPlayerListVisible then
-        UpdatePlayerList()
-    else
-        Tabs.Troll:Clear()
+-- Adicionando o botão "Infinite Yield" na aba "Others"
+Tabs.Others:AddButton({
+    Title = "Infinite Yield 🖥️",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))() -- Carrega o Infinite Yield
+        print("Infinite Yield executado!")
     end
-end
-
--- Adicionando o botão "Player list" na sessão Troll
-Tabs.Troll:AddButton({
-    Title = "Player list",
-    Callback = TogglePlayerList
 })
 
 -- Configuração dos gerenciadores
@@ -218,7 +167,8 @@ SaveManager:SetFolder("CapuzHub/specific-game")
 InterfaceManager:BuildInterfaceSection(Tabs.Main)
 InterfaceManager:BuildInterfaceSection(Tabs.Speed)
 InterfaceManager:BuildInterfaceSection(Tabs.Teleport) -- Adiciona a sessão Teleporte
-InterfaceManager:BuildInterfaceSection(Tabs.Troll) -- Adiciona a sessão Troll
+InterfaceManager:BuildInterfaceSection(Tabs.Kill) -- Adiciona a sessão Kill
+InterfaceManager:BuildInterfaceSection(Tabs.Others) -- Adiciona a sessão Others
 SaveManager:BuildConfigSection(Tabs.Main)
 
 -- Seleciona a aba principal
@@ -232,29 +182,3 @@ Fluent:Notify({
 
 -- Salvando configurações
 SaveManager:LoadAutoloadConfig()
-
--- Criando o botão flutuante
-local FloatingButton = Instance.new("TextButton")
-FloatingButton.Size = UDim2.fromOffset(100, 50)
-FloatingButton.Position = UDim2.new(0.5, -50, 0.1, 0)  -- Centralizado na parte superior
-FloatingButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Cor de fundo do botão
-FloatingButton.Text = "Cpz Hb"  -- Texto do botão
-FloatingButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- Cor do texto
-FloatingButton.Font = Enum.Font.SourceSans
-FloatingButton.TextSize = 24
-FloatingButton.Parent = game.CoreGui
-
--- Função para alternar a visibilidade do Hub
-local isHubVisible = true  -- Flag para controlar a visibilidade do Hub
-
-local function ToggleHubVisibility()
-    if isHubVisible then
-        Window:Hide()  -- Esconde o Hub
-    else
-        Window:Show()  -- Mostra o Hub
-    end
-    isHubVisible = not isHubVisible  -- Alterna o estado da visibilidade
-end
-
--- Conectando o clique no botão flutuante
-FloatingButton.MouseButton1Click:Connect(ToggleHubVisibility)
