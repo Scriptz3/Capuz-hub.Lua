@@ -1,4 +1,5 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
@@ -14,78 +15,40 @@ local Window = Fluent:CreateWindow({
 
 -- Abas
 local Tabs = {
-    Main = Window:AddTab({ Title = "Menu" }),
-    Speed = Window:AddTab({ Title = "Velocidade" }),
-    Troll = Window:AddTab({ Title = "Troll" })
+    Main = Window:AddTab({ Title = "Main" }),
+    Speed = Window:AddTab({ Title = "Velocidade" })
 }
 
--- Função para teleportar para outro jogador
-local function TeleportToPlayer(playerName)
-    local targetPlayer = game.Players:FindFirstChild(playerName)
-    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
-        local localPlayer = game.Players.LocalPlayer
-        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            localPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-            print("Teleportado para " .. playerName)
-        end
-    else
-        Fluent:Notify({
-            Title = "Erro",
-            Content = "Jogador não encontrado ou sem posição válida.",
-            Duration = 3
-        })
-        print("Erro ao teleportar: jogador não encontrado ou inválido.")
-    end
-end
-
--- Lista de jogadores na aba "Troll"
-local PlayerListSection = Tabs.Troll:AddSection({ Title = "Lista de Jogadores" })
-
-local function RefreshPlayerList()
-    PlayerListSection:Clear() -- Limpa a lista existente
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            -- Cria botão para cada jogador com a opção "TP"
-            PlayerListSection:AddButton({
-                Title = player.Name,
-                Callback = function()
-                    -- Ao clicar no nome do jogador, oferece a opção de teleportar
-                    Fluent:Notify({
-                        Title = "Teleportar para " .. player.Name,
-                        Content = "Deseja se teleportar para " .. player.Name .. "?",
-                        Duration = 3
-                    })
-                    
-                    -- Adiciona o botão de Teleportar (TP) dentro da lista
-                    PlayerListSection:AddButton({
-                        Title = "TP para " .. player.Name,
-                        Callback = function()
-                            TeleportToPlayer(player.Name)
-                        end
-                    })
-                end
-            })
-        end
-    end
-end
-
--- Botão para atualizar a lista de jogadores
-Tabs.Troll:AddButton({
-    Title = "Atualizar Lista",
-    Callback = function()
-        RefreshPlayerList()
-        print("Lista de jogadores atualizada.")
-    end
+-- Notificação inicial
+Fluent:Notify({
+    Title = "Bem-vindo",
+    Content = "O Capuz Hub foi carregado.",
+    Duration = 5
 })
 
--- Atualiza a lista automaticamente ao abrir
-RefreshPlayerList()
+-- Função para alterar a velocidade de tpwalk
+local function SetTpwalkSpeed(value)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+    print("Velocidade ajustada para Tpwalk " .. value)
+end
+
+-- Adicionando as opções de velocidade (Tpwalk 2, Tpwalk 3, etc.) na aba "Velocidade"
+local SpeedOptions = {2, 3, 4, 5, 10, 50, 100, 200, 500}
+
+for _, speed in ipairs(SpeedOptions) do
+    Tabs.Speed:AddButton({
+        Title = "Tpwalk " .. speed,
+        Callback = function()
+            SetTpwalkSpeed(speed)
+        end
+    })
+end
 
 -- Configuração dos gerenciadores
 SaveManager:SetLibrary(Fluent)
 InterfaceManager:SetLibrary(Fluent)
 
+-- Construção da interface
 InterfaceManager:SetFolder("CapuzHub")
 SaveManager:SetFolder("CapuzHub/specific-game")
 
